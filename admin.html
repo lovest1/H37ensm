@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Announcement Manager</title>
+<style>
+:root{--bg:#f3f6fb;--card:#fff;--ink:#172033;--muted:#637083;--line:#dbe2ec;--primary:#1769e0;--danger:#c62828}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);font:16px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:var(--ink)}
+header{background:#123d70;color:#fff;padding:18px 16px}header h1{font-size:22px;margin:0 0 4px}header p{margin:0;color:#d9e8fa;font-size:13px}
+main{max-width:1000px;margin:auto;padding:14px;display:grid;gap:14px}.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:15px;box-shadow:0 2px 10px #1020400a}
+h2{font-size:18px;margin:0 0 12px}.hint{font-size:13px;color:var(--muted)}label{display:block;font-size:14px;font-weight:650;margin:12px 0 5px}
+input,textarea,select{width:100%;font:inherit;padding:11px;border:1px solid #cbd5e1;border-radius:9px;background:#fff;color:#172033}
+textarea{min-height:76px;resize:vertical}.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}.colors{display:grid;grid-template-columns:1fr 1fr;gap:10px}.colors input{height:44px;padding:4px}
+button{font:inherit;font-weight:650;border:0;border-radius:9px;padding:11px 14px;background:var(--primary);color:white;cursor:pointer}.secondary{background:#e8eef7;color:#20324b}.danger{background:#b42318}.button-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}.button-row button{flex:1}
+.btn-editor{border:1px solid var(--line);border-radius:10px;padding:10px;margin-top:10px}.btn-editor .two{align-items:end}.remove{background:#fce8e6;color:#9b1c1c;padding:8px}
+.preview{border-radius:12px;padding:16px;min-height:110px;overflow:hidden}.preview img{max-width:100%;max-height:220px;object-fit:contain;border-radius:8px;display:block;margin:0 auto 12px}.preview h3{margin:0 0 6px;font-size:21px}.preview p{margin:0 0 12px;white-space:pre-wrap}.preview-buttons{display:flex;flex-wrap:wrap;gap:8px}.preview-buttons a{display:inline-block;padding:9px 13px;border-radius:7px;text-decoration:none;font-weight:650}
+.list{display:grid;gap:10px}.item{border:1px solid var(--line);border-radius:10px;padding:12px;display:grid;grid-template-columns:68px 1fr;gap:10px}.thumb{width:68px;height:68px;object-fit:cover;background:#eef2f7;border-radius:8px}.item h3{margin:0 0 4px;font-size:16px}.item p{margin:0;color:var(--muted);font-size:13px}.status{display:inline-block;font-size:12px;padding:3px 7px;border-radius:20px;background:#e8f5e9;color:#236b2d;margin-top:6px}.status.off{background:#eceff3;color:#596579}.item-actions{grid-column:1/-1;display:flex;gap:8px}.item-actions button{flex:1;padding:9px}.message{display:none;padding:10px;border-radius:8px;margin-bottom:10px;background:#e7f5ec;color:#175c2d}.message.error{background:#fdecea;color:#8b1e17}
+@media(min-width:780px){main{grid-template-columns:1fr 1fr;align-items:start}.wide{grid-column:1/-1}.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.form-grid>.card{min-width:0}}
+</style>
+</head>
+<body>
+<header><h1>Announcement Manager</h1><p>Create and publish app announcements from your phone</p></header>
+<main>
+<section class="card wide">
+<h2>Connection settings</h2><p class="hint">Paste your deployed Apps Script Web App URL. Keep your admin PIN private.</p>
+<label for="endpoint">Web App URL</label><input id="endpoint" type="url" placeholder="https://script.google.com/macros/s/.../exec">
+<label for="pin">Admin PIN</label><input id="pin" type="password" inputmode="numeric" placeholder="PIN set in Apps Script">
+<div class="button-row"><button id="connect">Connect / Refresh</button><button class="secondary" id="new">New announcement</button></div>
+</section>
+<section class="card">
+<h2 id="formTitle">Create announcement</h2><div id="msg" class="message"></div>
+<input id="id" type="hidden">
+<label for="title">Title (optional)</label><input id="title" maxlength="160" placeholder="e.g. New Korean Lesson">
+<label for="description">Description (optional)</label><textarea id="description" maxlength="1200" placeholder="Short announcement details"></textarea>
+<label for="imageFile">Image (optional)</label><input id="imageFile" type="file" accept="image/*" capture="environment">
+<p class="hint">Images are uploaded to Google Drive when you save. Image-only announcements are supported.</p>
+<div id="imageInfo" class="hint"></div>
+<h2 style="margin-top:18px">Buttons</h2><p class="hint">Add as many buttons as you need. Each button has its own label and link.</p>
+<div id="buttons"></div><div class="button-row"><button type="button" class="secondary" id="addButton">+ Add button</button></div>
+<h2 style="margin-top:18px">Appearance</h2>
+<div class="colors">
+<div><label for="background">Background</label><input id="background" type="color" value="#eaf4ff"></div>
+<div><label for="titleColor">Title color</label><input id="titleColor" type="color" value="#123d70"></div>
+<div><label for="textColor">Text color</label><input id="textColor" type="color" value="#243447"></div>
+<div><label for="buttonColor">Button color</label><input id="buttonColor" type="color" value="#1769e0"></div>
+</div>
+<label for="layout">Layout</label><select id="layout"><option value="card">Card</option><option value="center">Centered</option><option value="image-top">Image first</option></select>
+<label><input id="active" type="checkbox" checked style="width:auto;margin-right:8px">Published / visible in app</label>
+<div class="button-row"><button id="save">Save announcement</button><button id="clear" class="secondary">Clear form</button></div>
+</section>
+<section class="card">
+<h2>Live preview</h2><p class="hint">Preview updates as you type. Final appearance may vary slightly inside your app.</p>
+<div id="preview" class="preview"></div>
+</section>
+<section class="card wide">
+<h2>Saved announcements</h2><p class="hint">Edit, publish/hide, or delete announcements already in your Sheet.</p>
+<div id="list" class="list"><p class="hint">Connect to load announcements.</p></div>
+</section>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+let items=[], currentImageUrl='', pendingFile=null;
+function endpoint(){return $('endpoint').value.trim()}
+function pin(){return $('pin').value.trim()}
+function showMessage(text,error=false){$('msg').textContent=text;$('msg').className='message'+(error?' error':'');$('msg').style.display='block'}
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function buttonsData(){return [...$('buttons').querySelectorAll('.btn-editor')].map(b=>({text:b.querySelector('.btext').value.trim(),url:b.querySelector('.burl').value.trim()})).filter(b=>b.text||b.url)}
+function addButton(text='',url=''){const d=document.createElement('div');d.className='btn-editor';d.innerHTML=`<div class="two"><div><label>Button text</label><input class="btext" placeholder="Study Now" value="${esc(text)}"></div><div><label>Button URL</label><input class="burl" type="url" placeholder="https://..." value="${esc(url)}"></div></div><div class="button-row"><button type="button" class="remove">Remove button</button></div>`;d.querySelector('.remove').onclick=()=>{d.remove();renderPreview()};d.querySelectorAll('input').forEach(x=>x.addEventListener('input',renderPreview));$('buttons').appendChild(d);renderPreview()}
+function formData(){return {id:$('id').value,title:$('title').value.trim(),description:$('description').value.trim(),imageUrl:currentImageUrl,buttons:buttonsData(),background:$('background').value,titleColor:$('titleColor').value,textColor:$('textColor').value,buttonColor:$('buttonColor').value,layout:$('layout').value,active:$('active').checked}}
+function renderPreview(){const x=formData();let p='';if(x.imageUrl)p+=`<img src="${esc(x.imageUrl)}" alt="">`;if(x.title)p+=`<h3 style="color:${x.titleColor}">${esc(x.title)}</h3>`;if(x.description)p+=`<p style="color:${x.textColor}">${esc(x.description)}</p>`;if(x.buttons.length)p+=`<div class="preview-buttons">${x.buttons.map(b=>`<a href="#" style="background:${x.buttonColor};color:#fff">${esc(b.text||'Open')}</a>`).join('')}</div>`;if(!p)p='<p style="color:#68768a">Your announcement preview will appear here.</p>';$('preview').innerHTML=p;$('preview').style.background=x.background;$('preview').style.textAlign=x.layout==='center'?'center':'left';$('preview').style.display='block'}
+async function api(action,data={}){if(!endpoint())throw Error('Paste the Apps Script Web App URL first.');const r=await fetch(endpoint(),{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action,pin:pin(),...data})});const t=await r.text();let j;try{j=JSON.parse(t)}catch{throw Error('Server response was not JSON. Check deployment URL and Apps Script permissions.')}if(!j.ok)throw Error(j.error||'Request failed');return j}
+async function refresh(){try{$('list').innerHTML='<p class="hint">Loading…</p>';const j=await api('list');items=j.items||[];renderList();showMessage(`Connected. ${items.length} announcement(s) loaded.`)}catch(e){$('list').innerHTML='<p class="hint">Could not load announcements.</p>';showMessage(e.message,true)}}
+function renderList(){$('list').innerHTML='';if(!items.length){$('list').innerHTML='<p class="hint">No announcements yet.</p>';return}items.forEach(x=>{const d=document.createElement('div');d.className='item';d.innerHTML=`${x.imageUrl?`<img class="thumb" src="${esc(x.imageUrl)}" alt="">`:'<div class="thumb"></div>'}<div><h3>${esc(x.title||'(Image / content only)')}</h3><p>${esc(x.description||'No description')} · ${(x.buttons||[]).length} button(s)</p><span class="status ${x.active?'':'off'}">${x.active?'Published':'Hidden'}</span></div><div class="item-actions"><button class="secondary edit">Edit</button><button class="secondary toggle">${x.active?'Hide':'Publish'}</button><button class="danger delete">Delete</button></div>`;d.querySelector('.edit').onclick=()=>loadItem(x);d.querySelector('.toggle').onclick=async()=>{try{await api('save',{item:{...x,active:!x.active}});await refresh()}catch(e){showMessage(e.message,true)}};d.querySelector('.delete').onclick=async()=>{if(!confirm('Delete this announcement permanently?'))return;try{await api('delete',{id:x.id});await refresh()}catch(e){showMessage(e.message,true)}};$('list').appendChild(d)})}
+function loadItem(x){$('id').value=x.id||'';$('title').value=x.title||'';$('description').value=x.description||'';currentImageUrl=x.imageUrl||'';pendingFile=null;$('imageFile').value='';$('imageInfo').textContent=currentImageUrl?'Current image: '+currentImageUrl:'No image selected';$('buttons').innerHTML='';(x.buttons||[]).forEach(b=>addButton(b.text,b.url));$('background').value=x.background||'#eaf4ff';$('titleColor').value=x.titleColor||'#123d70';$('textColor').value=x.textColor||'#243447';$('buttonColor').value=x.buttonColor||'#1769e0';$('layout').value=x.layout||'card';$('active').checked=!!x.active;$('formTitle').textContent='Edit announcement';renderPreview();window.scrollTo({top:0,behavior:'smooth'})}
+function clearForm(){$('id').value='';$('title').value='';$('description').value='';$('imageFile').value='';currentImageUrl='';pendingFile=null;$('imageInfo').textContent='';$('buttons').innerHTML='';$('background').value='#eaf4ff';$('titleColor').value='#123d70';$('textColor').value='#243447';$('buttonColor').value='#1769e0';$('layout').value='card';$('active').checked=true;$('formTitle').textContent='Create announcement';addButton('Study Now','https://');renderPreview()}
+$('imageFile').addEventListener('change',e=>{pendingFile=e.target.files[0]||null;if(pendingFile){if(pendingFile.size>8*1024*1024){showMessage('Please choose an image under 8 MB.',true);pendingFile=null;e.target.value='';return}const reader=new FileReader();reader.onload=()=>{currentImageUrl=reader.result;$('imageInfo').textContent='Image selected: '+pendingFile.name+' (uploads on save)';renderPreview()};reader.readAsDataURL(pendingFile)}});
+['title','description','background','titleColor','textColor','buttonColor','layout','active'].forEach(id=>$(id).addEventListener('input',renderPreview));
+$('addButton').onclick=()=>addButton();$('new').onclick=clearForm;$('clear').onclick=clearForm;$('connect').onclick=refresh;
+$('save').onclick=async()=>{try{if(!formData().title&&!formData().description&&!pendingFile&&!currentImageUrl&&!formData().buttons.length)throw Error('Add an image, a title, a description, or a button.');$('save').disabled=true;$('save').textContent='Saving…';if(pendingFile){const dataUrl=await new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(r.result);r.onerror=reject;r.readAsDataURL(pendingFile)});const up=await api('upload',{fileName:pendingFile.name,mimeType:pendingFile.type,dataUrl});currentImageUrl=up.imageUrl;$('imageInfo').textContent='Uploaded: '+currentImageUrl;pendingFile=null}const x=formData();x.imageUrl=currentImageUrl;await api('save',{item:x});showMessage('Saved successfully.');clearForm();await refresh()}catch(e){showMessage(e.message,true)}finally{$('save').disabled=false;$('save').textContent='Save announcement'}};
+addButton('Study Now','https://');renderPreview();
+</script>
+</body></html>
